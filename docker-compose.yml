@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # AI趋势发现平台
+  ai-trends:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongodb:27017/ai-trends
+      - YOUTUBE_API_KEY=${YOUTUBE_API_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - PRODUCTHUNT_TOKEN=${PRODUCTHUNT_TOKEN}
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+
+  # MongoDB数据库
+  mongodb:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=ai-trends
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+  # Redis缓存（可选）
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mongodb_data:
+  redis_data:
